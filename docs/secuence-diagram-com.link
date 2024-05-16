@@ -1,0 +1,48 @@
+https://sequencediagram.org/
+actor Admin
+
+participant BuildChallengeEntityController
+participant FileReader
+participant GetterDataMeliService
+participant MeliApiGateway
+participant ChallengeRepository
+participant NotificationChallengeService
+participant ChallengeDefaultPresenter
+
+
+
+
+BuildChallengeEntityController->BuildChallengeEntityController:getReader()(ReaderTypePrimitive)
+
+
+BuildChallengeEntityController->BuildChallengeEntityController:ReaderResolver.Get(ReaderType)
+
+
+
+BuildChallengeEntityController->FileReader:Read(url, name, format, separator string) ([]BlendID, error)
+
+FileReader->BuildChallengeEntityController:error:StatusBadRequest
+
+
+BuildChallengeEntityController->GetterDataMeliService: getFullItems(ctx,client, cache, conf, []items)
+
+
+par MeliApiGateway
+
+GetterDataMeliService->GetterDataMeliService:GetItems
+GetterDataMeliService->GetterDataMeliService:GetCategory
+GetterDataMeliService->GetterDataMeliService:GetCurrency
+GetterDataMeliService->GetterDataMeliService:GetUserNickname
+GetterDataMeliService->MeliApiGateway: all before endpoint request
+MeliApiGateway->GetterDataMeliService: buildFullItem
+end
+GetterDataMeliService->BuildChallengeEntityController:[]FullItem
+
+BuildChallengeEntityController->ChallengeRepository:save([]FullItem)
+ChallengeRepository->BuildChallengeEntityController:ok
+BuildChallengeEntityController->NotificationChallengeService:send(message)
+NotificationChallengeService->BuildChallengeEntityController:ok
+
+BuildChallengeEntityController->ChallengeDefaultPresenter:getStyle()
+
+ChallengeDefaultPresenter->BuildChallengeEntityController:StatusOK
